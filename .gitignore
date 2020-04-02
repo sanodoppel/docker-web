@@ -1,6 +1,8 @@
 .env
-.idea
-.git
+sentry.env
+logs/
 data
-nginx/sites-available/*
-nginx/sites-enabled/*
+.DS_Store
+.idea/
+dump/
+nginx/sites-available
