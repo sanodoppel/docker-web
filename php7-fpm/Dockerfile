@@ -1,7 +1,7 @@
 FROM php:7.4-fpm
 ARG TIMEZONE
 
-RUN apt-get update && apt-get install nano sudo wget
+RUN apt-get update && apt-get install nano sudo
 
 # Set timezone
 RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone \

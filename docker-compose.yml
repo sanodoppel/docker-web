@@ -34,44 +34,43 @@ services:
         environment:
             XDEBUG_CONFIG: remote_host=${IP_ADDRESS}
 
-    db:
-        container_name: pgsql
-        image: postgres:12
-        volumes:
-            - ./dump:/dump
-            - ./data/postgresql:/var/lib/postgresql
-            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-        environment:
-            POSTGRES_DB: ${DB}
-            POSTGRES_USER: ${DB_USER}
-            POSTGRES_PASSWORD: ${DB_PASSWORD}
-        ports:
-            - 10.5.0.1:5432:5432
-            - 127.0.0.1:5432:5432
-        networks:
-            vpcbr:
-                ipv4_address: 10.5.0.4
-
 #    db:
-#        container_name: mysql
-#        image: mysql
-#        command:
-#            - "--default-authentication-plugin=mysql_native_password"
+#        container_name: pgsql
+#        image: postgres:12
 #        volumes:
 #            - ./dump:/dump
-#            - ./data/mysql:/var/lib/mysql
+#            - ./data/postgresql:/var/lib/postgresql
 #            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#
 #        environment:
-#            MYSQL_USER: ${MYSQL_USER}
-#            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-#            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+#            POSTGRES_DB: ${DB}
+#            POSTGRES_USER: ${DB_USER}
+#            POSTGRES_PASSWORD: ${DB_PASSWORD}
 #        ports:
-#            - 10.5.0.1:3306:3306
-#            - 127.0.0.1:3306:3306
+#            - 10.5.0.1:5432:5432
+#            - 127.0.0.1:5432:5432
 #        networks:
 #            vpcbr:
 #                ipv4_address: 10.5.0.4
+
+    db:
+        container_name: mysql
+        image: mysql:8
+
+        volumes:
+            - ./dump:/dump
+            - mysql_data_container:/var/lib/mysql
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        environment:
+            MYSQL_USER: ${DB_USER}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - 10.5.0.1:3306:3306
+            - 127.0.0.1:3306:3306
+        networks:
+            vpcbr:
+                ipv4_address: 10.5.0.4
 
     redis:
         container_name: redis
@@ -138,3 +137,8 @@ networks:
             config:
             - subnet: 10.5.0.0/16
               gateway: 10.5.0.1
+
+
+volumes:
+    # mongodb_data_container:
+    mysql_data_container:
