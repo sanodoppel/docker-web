@@ -16,6 +16,7 @@ RUN  apt-get update && \
   libzip-dev \
   libpng-dev \
   libjpeg-dev \
+  librabbitmq-dev \
   zip \
   && docker-php-ext-configure zip \
   && docker-php-ext-configure gd \
@@ -25,23 +26,24 @@ RUN  apt-get update && \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
-    opcache
+    opcache \
+    sockets
 
 RUN apt-get install -y autoconf g++ make git \
   && docker-php-source extract \
   && pecl install \
     redis \
+    amqp \
   && docker-php-ext-enable \
     redis \
+    amqp \
   && docker-php-source delete \
   && mkdir /xdebug_installer && cd /xdebug_installer && git clone https://github.com/xdebug/xdebug.git && cd xdebug && sh ./rebuild.sh && cd / && rm -rf /xdebug_installer \
   && rm -rf /tmp/*
 
 COPY conf.d/* /usr/local/etc/php/conf.d/
 
-RUN echo "www-data:www-data" | chpasswd && adduser www-data sudo
-
-RUN usermod -u 1001 www-data
+RUN adduser www-data sudo && usermod -u 1000 www-data && groupmod -u 1000 www-data
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 

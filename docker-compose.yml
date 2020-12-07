@@ -34,24 +34,24 @@ services:
         environment:
             XDEBUG_CONFIG: remote_host=${IP_ADDRESS}
 
-#    db:
-#        container_name: pgsql
-#        image: postgres:12
-#        volumes:
-#            - ./dump:/dump
-#            - ./data/postgresql:/var/lib/postgresql
-#            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-#
-#        environment:
-#            POSTGRES_DB: ${DB}
-#            POSTGRES_USER: ${DB_USER}
-#            POSTGRES_PASSWORD: ${DB_PASSWORD}
-#        ports:
-#            - 10.5.0.1:5432:5432
-#            - 127.0.0.1:5432:5432
-#        networks:
-#            vpcbr:
-#                ipv4_address: 10.5.0.4
+    dbpgsql:
+        container_name: pgsql
+        image: postgres:12
+        volumes:
+            - ./dump:/dump
+            - ./data/postgresql:/var/lib/postgresql
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+        environment:
+            POSTGRES_DB: ${DB}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - 10.5.0.1:5432:5432
+            - 127.0.0.1:5432:5432
+        networks:
+            vpcbr:
+                ipv4_address: 10.5.0.6
 
     db:
         container_name: mysql
@@ -81,6 +81,23 @@ services:
         networks:
             vpcbr:
                 ipv4_address: 10.5.0.5
+
+    rabbitmq:
+        container_name: rabbitmq
+        image: "rabbitmq:3-management"
+        environment:
+            RABBITMQ_ERLANG_COOKIE: "QWERTYQWERTY"
+            RABBITMQ_DEFAULT_USER: "rabbitmq"
+            RABBITMQ_DEFAULT_PASS: "rabbitmq"
+            RABBITMQ_DEFAULT_VHOST: "/"
+        ports:
+            - 10.5.0.1:15672:15672
+            - 10.5.0.1:5672:5672
+        labels:
+            NAME: "rabbitmq1"
+        networks:
+            vpcbr:
+                ipv4_address: 10.5.0.7
 
 #    sentry:
 #        container_name: sentry
@@ -127,8 +144,7 @@ services:
         container_name: adminer
         image: adminer
         ports:
-            - 10.5.0.1:8080:8080
-            - 127.0.0.1:8080:8080
+            - 8080:8080
 
 networks:
     vpcbr:
