@@ -43,7 +43,7 @@ RUN apt-get install -y autoconf g++ make git \
 
 COPY conf.d/* /usr/local/etc/php/conf.d/
 
-RUN adduser www-data sudo && usermod -u 1000 www-data && groupmod -u 1000 www-data
+RUN adduser www-data sudo && usermod -u 1000 www-data && groupmod -g 1000 www-data
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
