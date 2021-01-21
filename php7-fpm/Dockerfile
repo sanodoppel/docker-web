@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:7.2-fpm
 ARG TIMEZONE
 
 RUN apt-get update && apt-get install nano sudo
