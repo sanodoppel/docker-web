@@ -1,59 +1,40 @@
-version: '2'
+version: '3.3'
 
 services:
-
     nginx:
         container_name: nginx
         build: nginx
         ports:
             - 10.5.0.1:80:80
             - 127.0.0.1:80:80
-        volumes_from:
+        links:
             - php
         volumes:
             - ./logs/nginx/:/var/log/nginx
+            - ${APP_PATH}:/var/www
         networks:
-            vpcbr:
+            docker_web_network:
                 ipv4_address: 10.5.0.2
 
     php:
         container_name: phpfpm
         build:
-            context: php7-fpm
+            context: php/php8-fpm
             args:
                 TIMEZONE: ${TIMEZONE}
         networks:
-            vpcbr:
+            docker_web_network:
                 ipv4_address: 10.5.0.3
         volumes:
             - ${APP_PATH}:/var/www
             - ./logs/symfony:/var/www/symfony/app/logs
         links:
             - redis
-            - db
+            - dbmysql
         environment:
             XDEBUG_CONFIG: remote_host=${IP_ADDRESS}
 
-    dbpgsql:
-        container_name: pgsql
-        image: postgres:12
-        volumes:
-            - ./dump:/dump
-            - ./data/postgresql:/var/lib/postgresql
-            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-        environment:
-            POSTGRES_DB: ${DB}
-            POSTGRES_USER: ${DB_USER}
-            POSTGRES_PASSWORD: ${DB_PASSWORD}
-        ports:
-            - 10.5.0.1:5432:5432
-            - 127.0.0.1:5432:5432
-        networks:
-            vpcbr:
-                ipv4_address: 10.5.0.6
-
-    db:
+    dbmysql:
         container_name: mysql
         image: mysql:8
 
@@ -69,8 +50,27 @@ services:
             - 10.5.0.1:3306:3306
             - 127.0.0.1:3306:3306
         networks:
-            vpcbr:
+            docker_web_network:
                 ipv4_address: 10.5.0.4
+
+#    dbpgsql:
+#        container_name: pgsql
+#        image: postgres:12
+#        volumes:
+#            - ./dump:/dump
+#            - postgresql_data_container:/var/lib/postgresql
+#            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#
+#        environment:
+#            POSTGRES_DB: ${DB}
+#            POSTGRES_USER: ${DB_USER}
+#            POSTGRES_PASSWORD: ${DB_PASSWORD}
+#        ports:
+#            - 10.5.0.1:5432:5432
+#            - 127.0.0.1:5432:5432
+#        networks:
+#            docker_web_network:
+#                ipv4_address: 10.5.0.4
 
     redis:
         container_name: redis
@@ -79,66 +79,27 @@ services:
             - 10.5.0.1:6379:6379
             - 127.0.0.1:6379:6379
         networks:
-            vpcbr:
+            docker_web_network:
                 ipv4_address: 10.5.0.5
 
     rabbitmq:
         container_name: rabbitmq
         image: "rabbitmq:3-management"
         environment:
-            RABBITMQ_ERLANG_COOKIE: "QWERTYQWERTY"
-            RABBITMQ_DEFAULT_USER: "rabbitmq"
-            RABBITMQ_DEFAULT_PASS: "rabbitmq"
+            RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
             RABBITMQ_DEFAULT_VHOST: "/"
         ports:
             - 10.5.0.1:15672:15672
             - 10.5.0.1:5672:5672
+            - 127.0.0.1:15672:15672
+            - 127.0.0.1:5672:5672
         labels:
             NAME: "rabbitmq1"
         networks:
-            vpcbr:
-                ipv4_address: 10.5.0.7
-
-#    sentry:
-#        container_name: sentry
-#        image: sentry
-#        env_file:
-#            - sentry.env
-#        ports:
-#            - 10.5.0.1:9000:9000
-#            - 127.0.0.1:9000:9000
-#        depends_on:
-#            - db
-#            - redis
-#        networks:
-#            vpcbr:
-#                ipv4_address: 10.5.0.6
-#
-#    cron:
-#        container_name: sentry-cron
-#        image: sentry
-#        env_file:
-#            - sentry.env
-#        command: run cron
-#        depends_on:
-#            - db
-#            - redis
-#        networks:
-#            vpcbr:
-#                ipv4_address: 10.5.0.7
-#
-#    worker:
-#        container_name: sentry-worker
-#        image: sentry
-#        env_file:
-#            - sentry.env
-#        command: run worker
-#        depends_on:
-#            - db
-#            - redis
-#        networks:
-#            vpcbr:
-#                ipv4_address: 10.5.0.8
+            docker_web_network:
+                ipv4_address: 10.5.0.6
 
     adminer:
         container_name: adminer
@@ -147,14 +108,12 @@ services:
             - 8080:8080
 
 networks:
-    vpcbr:
+    docker_web_network:
         driver: bridge
         ipam:
             config:
             - subnet: 10.5.0.0/16
-              gateway: 10.5.0.1
-
 
 volumes:
-    # mongodb_data_container:
+#    postgresql_data_container:
     mysql_data_container:

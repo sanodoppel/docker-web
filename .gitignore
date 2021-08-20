@@ -1,8 +1,5 @@
 .env
 sentry.env
 logs/
-data
 .DS_Store
 .idea/
-dump/
-nginx/sites-available
