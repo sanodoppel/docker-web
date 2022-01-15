@@ -1,9 +1,13 @@
-FROM php:8-fpm
+FROM php:8.1-fpm
 
-RUN apt-get update && apt-get install nano sudo
+RUN apt-get update && apt-get install -y sudo nano
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN docker-php-source extract \
+    && mkdir /usr/src/php/ext/amqp \
+    && curl -L https://github.com/php-amqp/php-amqp/archive/master.tar.gz | tar -xzC /usr/src/php/ext/amqp --strip-components=1
 
 RUN  apt-get update && \
     apt-get install -y libpq-dev \
@@ -11,6 +15,7 @@ RUN  apt-get update && \
   libzip-dev \
   libpng-dev \
   libjpeg-dev \
+  librabbitmq-dev \
   zip \
   && docker-php-ext-configure zip \
   && docker-php-ext-install \
@@ -18,7 +23,9 @@ RUN  apt-get update && \
     pdo_mysql \
     pdo_pgsql \
     bcmath \
-    opcache
+    opcache \
+    amqp \
+    sockets
 
 RUN apt-get install -y autoconf g++ make git \
   && docker-php-source extract \
@@ -26,6 +33,8 @@ RUN apt-get install -y autoconf g++ make git \
     redis \
   && docker-php-ext-enable \
     redis \
+    amqp \
+    sockets \
   && docker-php-source delete \
   && mkdir /xdebug_installer && cd /xdebug_installer && git clone https://github.com/xdebug/xdebug.git && cd xdebug && sh ./rebuild.sh && cd / && rm -rf /xdebug_installer \
   && rm -rf /tmp/*
