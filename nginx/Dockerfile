@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM nginx:1.25-bookworm
 
 RUN apt-get update && apt-get install -y \
     nginx \
